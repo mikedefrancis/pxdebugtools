@@ -1,6 +1,5 @@
 setup.py
 xxdebug/__init__.py
-xxdebug/colors_bak.py
 xxdebug/xxcolors.py
 xxdebug/xxdebug.py
 xxdebug.egg-info/PKG-INFO

@@ -718,7 +718,8 @@ class XXDebug():
         input(text)
 
     # A function to print the output from the most recent invocation of IDA Pro to the command line
-    # This function prints the output in color if the -c option was passed to brass
+    # NOTE: THIS FUNCTION HAS NOT BEEN RETESTED SINCE I PORTED IT HERE.
+    # IT IS NO DOUBT BROKEN BUT I DO NOT NOW HAVE TIME TO FIX!
     @staticmethod
     def print_and_erase_idalog():
         # 

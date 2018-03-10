@@ -1,0 +1,12 @@
+BASIC DBG: basic output message from xxdebug (will be logged to file if autologging enabled)
+VERBOSE DBG: HIT BREAKPOINT AND NOW DESCENDING INTO PDB (command line debugger)
+BASIC DBG: ________________________________________________________________
+BASIC DBG: bp @ file-------->   /home/dev/github/mikedefrancis/xxdebug/example.py
+BASIC DBG: bp @ func-------->   <module>
+BASIC DBG: bp @ line-------->   8
+BASIC DBG: ________________________________________________________________
+VERBOSE DBG: Use 'u<enter>' or 'up' to return to function context and 'print <var><enter>' to inspect context.
+VERBOSE DBG: Use 'up<enter>' and 'down<enter>' to further traverse call stack. use 'cont<enter>' to continue.
+BASIC DBG: regular breakpoint here
+VERBOSE DBG: verbose output message from xxdebug (will be logged to file if autologging enabled)
+SUPERUSER DBG: superuser output message from xxdebug (will be logged to file if autologging enabled)
