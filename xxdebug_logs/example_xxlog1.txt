@@ -1,1 +1,0 @@
-BASIC DBG: basic output message from xxdebug (will be logged to file if autologging enabled)

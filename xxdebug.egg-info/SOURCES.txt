@@ -1,9 +1,0 @@
-setup.py
-xxdebug/__init__.py
-xxdebug/xxcolors.py
-xxdebug/xxdebug.py
-xxdebug.egg-info/PKG-INFO
-xxdebug.egg-info/SOURCES.txt
-xxdebug.egg-info/dependency_links.txt
-xxdebug.egg-info/not-zip-safe
-xxdebug.egg-info/top_level.txt
