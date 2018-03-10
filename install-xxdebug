@@ -1,0 +1,13 @@
+#!/bin/sh
+echo "XXDEBUG by Mikey D"
+echo "installing..."
+
+echo "INSTALLING XXDEBUG PYTHON MODULE..."
+sudo python setup.py install
+echo "...DONE"
+echo "..."
+echo "INSTALLING XXDEBUG EXECUTABLE"
+sudo cp xxdebug/xxdebug.py /usr/bin/xxdebug -v
+echo "...DONE"
+
+echo "...install complete. Enjoy! ~Mike"

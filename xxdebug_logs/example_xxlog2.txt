@@ -1,0 +1,3 @@
+BASIC DBG: basic output message from xxdebug (will be logged to file if autologging enabled)
+VERBOSE DBG: verbose output message from xxdebug (will be logged to file if autologging enabled)
+SUPERUSER DBG: superuser output message from xxdebug (will be logged to file if autologging enabled)

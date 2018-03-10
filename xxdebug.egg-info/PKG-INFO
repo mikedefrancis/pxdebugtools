@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: xxdebug
+Version: 0.1
+Summary: xxdebug is a command-line configurable python debug output framework
+Home-page: http://github.com/mikedefrancis/xxdebug
+Author: mikedefrancis
+Author-email: mike@defrancis.org
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN
