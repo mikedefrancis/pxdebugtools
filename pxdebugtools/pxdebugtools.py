@@ -655,6 +655,27 @@ class pxdebug():
                     raise e
                 sys.stdout = old_stdout
 
+    # a nice short alias
+    @staticmethod
+    def bp(msg='', hide=False):
+        # Only execute the breakpoints when the right set of user defined conditions have been met
+        if (pxdebug.debug_enabled == True) and (pxdebug.trace_enabled == True):
+            if (pxdebug.hidden_trace_enabled == True) or (hide == False):
+                frame = sys._getframe().f_back
+                (filename, line_number, function_name, lines, index) = inspect.getframeinfo(frame)
+                old_stdout = sys.stdout
+                sys.stdout = sys.__stdout__
+                if msg is not '':
+                    pxdebug.basic(msg)
+                pxdebug.basic('---BREAK----> ' + filename +' | func=' + function_name )#+'|line'+str(line_number) + ' <-------')
+                try:
+                    Pdb().set_trace(frame)
+                except e as Exception:
+                    print("pxdebug ERROR SETTING TRACE")
+                    raise e
+                sys.stdout = old_stdout
+
+
 
     # SOME UTILITY FUNCTIONS FOR ENABLING / DISABLING YOUR OWN DEBUG CODE IN YOUR PROGRAMS:
     @staticmethod
