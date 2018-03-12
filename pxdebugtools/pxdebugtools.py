@@ -5,7 +5,7 @@
 # nicest thing: enable/disable all of your debug from a cli program. No need to remove your debug prints from your programs anymore.
 
 #########################################################
-####         PXDEBUG          ###########################
+####         pxdebug          ###########################
 #### a juicy python 2.7 and up debug framework ##########
 #########################################################
 
@@ -34,7 +34,7 @@ def write_pxdebug_environment_vars_to_file():
     home = expanduser("~")
     thispath = os.path.join(home,'.pxdebug')
     if not os.path.exists(thispath):
-        print "creating ~/.pxdebug/ folder"
+        print("creating ~/.pxdebug/ folder")
         os.makedirs(thispath)
     env_file = open(thispath + '/pxdebug.env', 'w+')
 
@@ -60,7 +60,7 @@ def write_env_var_to_file(f, varname):
 def print_env_var(varname):
     val = os.environ.get(varname)
     if val is not None:
-        print varname + '=' + str(val)
+        print(varname + '=' + str(val))
 
 
 # READ 'em HACK to make environment variables persist using a file:
@@ -68,7 +68,7 @@ def get_pxdebug_environment_vars_from_file():
     home = expanduser("~")
     thispath = os.path.join(home,'.pxdebug')
     if not os.path.exists(thispath):
-        print "creating ~/.pxdebug/ folder"
+        print("creating ~/.pxdebug/ folder")
         os.makedirs(thispath)
     else:
         if os.path.exists(thispath + '/pxdebug.env'):
@@ -209,7 +209,7 @@ def get_text_attr():
       csbi = CONSOLE_SCREEN_BUFFER_INFO()
       GetConsoleScreenBufferInfo(stdout_handle, byref(csbi))
       return csbi.wAttributes
-    except Exception, e:
+    except Exception as e:
       pass
   return None
 
@@ -225,7 +225,7 @@ def set_text_attr(color):
     try:
       SetConsoleTextAttribute(stdout_handle, color)
       return True
-    except Exception, e:
+    except Exception as e:
       pass
   return False
 
@@ -241,7 +241,7 @@ def windows_default_colors():
       default_colors = get_text_attr()
       default_bg = default_colors & 0x0070
       return default_bg
-    except Exception, e:
+    except Exception as e:
       pass
   return None
 
@@ -256,7 +256,7 @@ def restore_windows_colors(default_gb):
     try:
       set_text_attr(default_gb)
       return True
-    except Exception, e:
+    except Exception as e:
       pass
   return False
 
@@ -278,7 +278,7 @@ def caution(msg):
     sys.stdout.write(str(msg) + "\n")
     restore_windows_colors(windows_user_default_color_code)
   else:
-    print HC + FYEL + "[" + FWHT + "-" + FYEL + "] " + FWHT + str( msg ) + RS
+    print(HC + FYEL + "[" + FWHT + "-" + FYEL + "] " + FWHT + str( msg ) + RS)
 
 
 def good( msg ): 
@@ -295,7 +295,7 @@ def good( msg ):
     sys.stdout.write(str(msg) + "\n")
     restore_windows_colors(windows_user_default_color_code)
   else:
-    print HC + FGRN + "[" + FWHT + "*" + FGRN + "] " + FWHT + str( msg ) + RS
+    print(HC + FGRN + "[" + FWHT + "*" + FGRN + "] " + FWHT + str( msg ) + RS)
 
 
 def bad( msg ): 
@@ -312,7 +312,7 @@ def bad( msg ):
     sys.stdout.write(str(msg) + "\n")
     restore_windows_colors(windows_user_default_color_code)
   else:
-    print HC + FRED + "[" + FWHT + "x" + FRED + "] " + FWHT + str( msg ) + RS
+    print(HC + FRED + "[" + FWHT + "x" + FRED + "] " + FWHT + str( msg ) + RS)
 
 
 def status(msg ): 
@@ -329,7 +329,7 @@ def status(msg ):
     sys.stdout.write(str(msg) + "\n")
     restore_windows_colors(windows_user_default_color_code)
   else:
-    print HC + FBLU + "[" + FWHT + "*" + FBLU + "] " + FWHT + str( msg ) + RS
+    print(HC + FBLU + "[" + FWHT + "*" + FBLU + "] " + FWHT + str( msg ) + RS)
 
 
 def error( msg ): 
@@ -346,7 +346,7 @@ def error( msg ):
     sys.stdout.write(str(msg) + "\n")
     restore_windows_colors(windows_user_default_color_code)
   else:
-    print HC + FRED + "[" + FWHT + "ERROR" + FRED + "] " + FWHT + str( msg ) + RS
+    print(HC + FRED + "[" + FWHT + "ERROR" + FRED + "] " + FWHT + str( msg ) + RS)
 
 
 def underline( msg ): 
@@ -506,7 +506,7 @@ class pxdebug():
     logfile_name = logfile_name + '_xxlog'
 
     if not os.path.exists(logfile_path):
-        print "creating folder " + str(logfile_path)
+        print("creating folder " + str(logfile_path))
         os.makedirs(logfile_path)
     
     
@@ -519,7 +519,7 @@ class pxdebug():
     if env_logfile_name is not None:
         if env_logfile_name != "DEFAULT":
             logfile_name = env_logfile_name
-            print "TEST HERE HERE THERE IT WAM"
+            print("TEST HERE HERE THERE IT WAM")
             #reset this so the override only affects the next file
             os.environ['PXDEBUG_LOGNAME'] = "DEFAULT"
   
@@ -582,9 +582,9 @@ class pxdebug():
                 (filename, line_number, function_name, lines, index) = inspect.getframeinfo(frame)
                 dmsg = "BASIC DEBUG| " + str(msg)
                 if pxdebug.color_enabled == True:
-                    print green(dmsg)
+                    print(green(dmsg))
                 else:
-                    print dmsg
+                    print(dmsg)
                 pxdebug.logprint(dmsg)
     
             return True
@@ -602,9 +602,9 @@ class pxdebug():
                 else:
                     dmsg = "VERBOSE DEBUG(" + filename+" line " + str(line_number) + ")|  " + str(msg)
                 if pxdebug.color_enabled == True:
-                    print yellow(dmsg)
+                    print(yellow(dmsg))
                 else:
-                    print dmsg
+                    print(dmsg)
                 pxdebug.logprint(dmsg)
             return True
         return False
@@ -621,9 +621,9 @@ class pxdebug():
                 else:
                     dmsg="EXTREME DEBUG(" + filename+" line " + str(line_number) + " [func=" + function_name+"])|  " + str(msg)
                 if pxdebug.color_enabled == True:
-                    print cyan(dmsg)
+                    print(cyan(dmsg))
                 else:
-                    print dmsg
+                    print(dmsg)
                 pxdebug.logprint(dmsg)
             
             return True
@@ -651,7 +651,7 @@ class pxdebug():
                 try:
                     Pdb().set_trace(frame)
                 except e as Exception:
-                    print "PXDEBUG ERROR SETTING TRACE"
+                    print("pxdebug ERROR SETTING TRACE")
                     raise e
                 sys.stdout = old_stdout
 
@@ -685,7 +685,7 @@ class pxdebug():
                     try:
                         pxdebug.logfile.write(text + '\n')
                     except:
-                        print "PXDEBUG ERROR WRITING TO LOGFILE"
+                        print("PXDEBUG ERROR WRITING TO LOGFILE")
                         pass
 
     @staticmethod
@@ -740,16 +740,16 @@ class pxdebug():
         
         if args.enablecolor is not None:
             if args.enablecolor == True:
-                print "enabling pxdebug color print"
+                print("enabling pxdebug color print")
                 os.environ['PXDEBUG_COLOR'] = 'YES'
 
         if args.disablecolor is not None:
             if args.disablecolor==True:
-                print "disabling pxdebug color print"
+                print("disabling pxdebug color print")
                 os.environ['PXDEBUG_COLOR'] = 'NO'
 
         if args.level is not None:
-            print "setting pxdebug logging level to " + args.level.upper()
+            print("setting pxdebug logging level to " + args.level.upper())
             if args.level.upper() == "BASIC":
                 os.environ['PXDEBUG_LEVEL'] = "BASIC"
             elif args.level.upper() == "VERBOSE": 
@@ -763,23 +763,23 @@ class pxdebug():
 
         if args.enablelogging is not None:
             if args.enablelogging == True:
-                print "enabling pxdebug logging feature"
+                print("enabling pxdebug logging feature")
                 os.environ['PXDEBUG_LOGGING'] = "YES"       
         if args.disablelogging is not None:
             if args.disablelogging == True:
-                print "disabling pxdebug logging feature"
+                print("disabling pxdebug logging feature")
                 os.environ['PXDEBUG_LOGGING'] = "YES"
         if args.logpath is not None:
             if args.logpath != "":
-                print "setting pxdebug logpath to " + args.logpath
+                print("setting pxdebug logpath to " + args.logpath)
                 os.environ['PXDEBUG_LOGPATH'] = args.logpath
         if args.logname is not None:
             if args.logname != "":
-                print "setting pxdebug logname to " + args.logname
+                print("setting pxdebug logname to " + args.logname)
                 os.environ['PXDEBUG_LOGNAME'] = args.logname
         if args.default is not None:
             if args.default == True:
-                print "restoring pxdebug defaults"
+                print("restoring pxdebug defaults")
                 os.environ['PXDEBUG_ENABLE'] = "YES"
                 os.environ['PXDEBUG_LEVEL'] = "VERBOSE"
                 os.environ['PXDEBUG_COLOR'] = "YES"
@@ -791,7 +791,7 @@ class pxdebug():
                 os.environ['PXDEBUG_TESTFLAG'] = "NO"
         if args.max is not None:
             if args.max == True:
-                print "enabling all pxdebug features"
+                print("enabling all pxdebug features")
                 os.environ['PXDEBUG_ENABLE'] = "YES"
                 os.environ['PXDEBUG_LEVEL'] = "EXTREME"
                 os.environ['PXDEBUG_COLOR'] = "YES"
@@ -801,40 +801,40 @@ class pxdebug():
                 os.environ['PXDEBUG_TESTFLAG'] = "YES"
         if args.off is not None:
             if args.off == True:
-                print "disabling pxdebug features"
+                print("disabling pxdebug features")
                 os.environ['PXDEBUG_ENABLE'] = "NO"
 
         if args.on is not None:
             if args.on == True:
-                print "enabling pxdebug"
+                print("enabling pxdebug")
                 os.environ['PXDEBUG_ENABLE'] = "YES"
 
         if args.enabletrace is not None:
             if args.enabletrace == True:
-                print "enabling pdb debug trace features"            
+                print("enabling pdb debug trace features") 
                 #  os.environ['PXDEBUG_LEVEL'] = "VERBOSE" #some nice additional messages when debugging?
                 os.environ['PXDEBUG_ENABLETRACE'] = "YES"
         if args.disabletrace is not None:
             if args.disabletrace == True:
-                print "disabling pdb debug trace features"
+                print("disabling pdb debug trace features")
                 os.environ['PXDEBUG_ENABLETRACE'] = "NO"
         if args.enablehiddentrace is not None:
             if args.enablehiddentrace == True:
-                print "enabling pdb debug hidden trace features"
+                print("enabling pdb debug hidden trace features")
                 os.environ['PXDEBUG_ENABLEHIDDENTRACE'] = "YES"
         if args.disablehiddentrace is not None:
             if args.disablehiddentrace == True:
-                print "disabling pdb debug hidden trace features"
+                print("disabling pdb debug hidden trace features")
                 os.environ['PXDEBUG_ENABLEHIDDENTRACE'] = "NO"
 
         if args.setflag is not None:
             if args.setflag == True:
-                print "enabling the test flag"
+                print("enabling the test flag")
                 os.environ['PXDEBUG_TESTFLAG'] = "YES"
 
         if args.unsetflag is not None:
             if args.unsetflag == True:
-                print "disabling the test flag"
+                print("disabling the test flag")
                 os.environ['PXDEBUG_TESTFLAG'] = "NO"
 
 
@@ -846,7 +846,7 @@ class pxdebug():
         enabled = os.environ.get('PXDEBUG_ENABLE')
         if enabled is None:
             # THE ENVIRONMENT NEEDS TO BE PROVISIONED WITH AN INITIAL CONFIG
-            print "creating intial pxdebug config with default settings"
+            print("creating intial pxdebug config with default settings")
             os.environ['PXDEBUG_ENABLE'] = "YES"
             os.environ['PXDEBUG_LEVEL'] = "VERBOSE"
             os.environ['PXDEBUG_COLOR'] = "YES"
@@ -882,15 +882,15 @@ if __name__ == "__main__":
     if len(args) == 0:
         args = ['--help']
     if '--help' in args:
-        print "THIS PROGRAM CONTROLS GLOBAL DEBUG SETTINGS FOR pxdebug.basic() and other"
-        print "ROUTINES IN PYTHON MODULES WITH 'from pxdebugtools import pxdebug'"
-        print ""
-        print "YOU MUST SUPPLY AN OPTION WHEN RUNNING THIS PROGRAM. Examples:"
-        print "use 'pxdebug --show' to show the current pxdebug settings without making changes"
-        print "use 'pxdebug --enable' to enable pxdebug.out() and others in imported modules"
-        print "use 'pxdebug --disable' to disable pxdebug.out() and others in imported modules"
-        print "use 'pxdebug --max' to turn on all debug output from pxdebug including verbose and extreme levels"
-        print ""
+        print("THIS PROGRAM CONTROLS GLOBAL DEBUG SETTINGS FOR pxdebug.basic() and other")
+        print("ROUTINES IN PYTHON MODULES WITH 'from pxdebugtools import pxdebug'")
+        print("")
+        print("YOU MUST SUPPLY AN OPTION WHEN RUNNING THIS PROGRAM. Examples:")
+        print("use 'pxdebug --show' to show the current pxdebug settings without making changes")
+        print("use 'pxdebug --enable' to enable pxdebug.out() and others in imported modules")
+        print("use 'pxdebug --disable' to disable pxdebug.out() and others in imported modules")
+        print("use 'pxdebug --max' to turn on all debug output from pxdebug including verbose and extreme levels")
+        print("")
         pxdebug.parse_environment_arguments(args)
         os.exit(1)
     else:

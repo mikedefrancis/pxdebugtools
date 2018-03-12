@@ -1,1 +1,1 @@
-from pxdebugtools import pxdebug
+from .pxdebugtools import pxdebug

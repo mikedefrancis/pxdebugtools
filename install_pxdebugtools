@@ -2,9 +2,12 @@
 echo "PXDEBUGTOOOLS by Mikey D"
 echo "installing..."
 
-echo "INSTALLING PXDEBUGTOOLS PYTHON MODULE..."
+echo "INSTALLING PXDEBUGTOOLS PYTHON 2.7 MODULE..."
 sudo python setup.py install
 echo "...DONE"
+echo "INSTALLING PXDEBUGTOOLS PYTHON 3.5 MODULE..."
+sudo pip3 install .
+echo "...done."
 echo "..."
 echo "INSTALLING PXDEBUG EXECUTABLE"
 sudo cp pxdebugtools/pxdebugtools.py /usr/bin/pxdebug -v
