@@ -11,7 +11,7 @@
      
 * It allows you to change all of the functionality of all of the debug calls throughout all of your programs.
      
-* This is accomplished using a command like program calle pxdebug that writes a file to ~/.pxdebug/pxdebug.env.
+* This is accomplished using a command-line program called pxdebug that writes a file to ~/.pxdebug/pxdebug.env.
      
 * The program uses environment variables that get reloaded when the command line program is run or the python module is loaded.
 
