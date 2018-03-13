@@ -489,143 +489,140 @@ def tracefunc(frame, event, arg, indent=[0]):
 # This is just a bunch of static methods with some environment variable stupidity added.
 class pxdebug():
 
-    debug_enabled = False
-    env_debug_enabled = os.environ.get('PXDEBUG_ENABLE')
-    if env_debug_enabled is not None:
-        if env_debug_enabled.upper() == "YES":
-            debug_enabled = True
+    @staticmethod
+    def read_env_vars(overwrite_old = False):
+
+        pxdebug.debug_enabled = False
+        env_debug_enabled = os.environ.get('PXDEBUG_ENABLE')
+        if env_debug_enabled is not None:
+            if env_debug_enabled.upper() == "YES":
+                pxdebug.debug_enabled = True
 
 
-    test_flag = False
-    env_test_flag = os.environ.get('PXDEBUG_TESTFLAG')
-    if env_test_flag is not None:
-        if env_test_flag.upper() == "YES":
-            test_flag = True
+        pxdebug.test_flag = False
+        env_test_flag = os.environ.get('PXDEBUG_TESTFLAG')
+        if env_test_flag is not None:
+            if env_test_flag.upper() == "YES":
+                pxdebug.test_flag = True
 
 
-    env_debug_level = os.environ.get('PXDEBUG_LEVEL')
-    debug_level = dlevel.DBG_BASIC
-    # if the PXDEBUG_LEVEL environment variable has been set, use the value as the debug level
-    # this allows the user to change the debug level without having to modify the python code within any files
-    # which is pretty nice
-    if env_debug_level is not None:
-        if env_debug_level.upper() == 'BASIC':
-            debug_level = dlevel.DBG_BASIC
-        elif env_debug_level.upper() == 'VERBOSE':
-            debug_level = dlevel.DBG_VERBOSE
-        elif env_debug_level.upper() == 'EXTREME':
-            debug_level = dlevel.DBG_EXTREME
+        env_debug_level = os.environ.get('PXDEBUG_LEVEL')
+        pxdebug.debug_level = dlevel.DBG_BASIC
+        # if the PXDEBUG_LEVEL environment variable has been set, use the value as the debug level
+        # this allows the user to change the debug level without having to modify the python code within any files
+        # which is pretty nice
+        if env_debug_level is not None:
+            if env_debug_level.upper() == 'BASIC':
+                pxdebug.debug_level = dlevel.DBG_BASIC
+            elif env_debug_level.upper() == 'VERBOSE':
+                pxdebug.debug_level = dlevel.DBG_VERBOSE
+            elif env_debug_level.upper() == 'EXTREME':
+                pxdebug.debug_level = dlevel.DBG_EXTREME
 
-    env_debug_color = os.environ.get('PXDEBUG_COLOR')
-    color_enabled = False
-    if env_debug_color is not None:
-        if env_debug_color.upper() == "YES":
-            color_enabled = True
-        elif env_debug_color.upper() == "NO":
-            color_enabled = False
+        env_debug_color = os.environ.get('PXDEBUG_COLOR')
+        pxdebug.color_enabled = False
+        if env_debug_color is not None:
+            if env_debug_color.upper() == "YES":
+                pxdebug.color_enabled = True
+            elif env_debug_color.upper() == "NO":
+                pxdebug.color_enabled = False
 
-    env_logfile_name = os.environ.get('PXDEBUG_LOGNAME')
-    
-    env_logfile_path = os.environ.get('PXDEBUG_LOGPATH')
-    
-    home = expanduser("~")
-    thispath = os.path.join(home,'.pxdebug')
-    log_folder = 'pxdebug_logs' 
+        env_logfile_name = os.environ.get('PXDEBUG_LOGNAME')
+        
+        env_logfile_path = os.environ.get('PXDEBUG_LOGPATH')
+        
+        home = expanduser("~")
+        thispath = os.path.join(home,'.pxdebug')
+        pxdebug.log_folder = 'pxdebug_logs' 
 
-    origin_name = ntpath.basename(os.path.realpath(sys.argv[0]))
-    origin_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
-
-
-    logfile_path = os.path.join(origin_dir, log_folder)
-    try:
-        logfile_name, ext = origin_name.split('.')
-    except:
-        logfile_name = origin_name
-        pass
+        pxdebug.origin_name = ntpath.basename(os.path.realpath(sys.argv[0]))
+        pxdebug.origin_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 
-    logfile_name = logfile_name + '_xxlog'
-
-    if not os.path.exists(logfile_path):
-        print("creating folder " + str(logfile_path))
-        os.makedirs(logfile_path)
-    
-    
-    
-    # the default behavior is to put the logs in the place where the user script resides in an xxlogs folder
-    # with the name of the script executed plus '_xxlog' and a number
-    # the only way to change this behavior is to set the environment vars for logname and logpath
-    # however, I do not want changes to these variables to permanently affect where the logs go.
-    # this override behavior should be one-time only
-    if env_logfile_name is not None:
-        if env_logfile_name != "DEFAULT":
-            logfile_name = env_logfile_name
-            #reset this so the override only affects the next file
-            os.environ['PXDEBUG_LOGNAME'] = "DEFAULT"
-  
-    if env_logfile_path is not None:
-        if env_logfile_path != "DEFAULT":
-            logfile_path = env_logfile_path
-            os.environ['PXDEBUG_LOGPATH'] = "DEFAULT"
+        pxdebug.logfile_path = os.path.join(pxdebug.origin_dir, pxdebug.log_folder)
+        try:
+            pxdebug.logfile_name, ext = origin_name.split('.')
+        except:
+            pxdebug.logfile_name = pxdebug.origin_name
+            pass
 
 
-    env_do_logging = os.environ.get('PXDEBUG_LOGGING')
-    do_logging = False
-    if env_do_logging is not None:
-        if env_do_logging.upper() == "YES":
-            do_logging = True
+        pxdebug.logfile_name = pxdebug.logfile_name + '_xxlog'
 
-    logfile = None
-    if do_logging:
-        if (logfile_name is not None) and (logfile_path is not None):
-            ######### LOG FILE SHENANIGANS ## 
-            # initialize the name of the log file
-            log_num = 0
-            logfile_full_name = logfile_name + str(log_num) + ".txt"
-            logpath = os.path.join(logfile_path, logfile_full_name)
-            while (os.path.exists(logpath)):
-                log_num = log_num + 1
-                logfile_full_name = logfile_name + str(log_num) + ".txt"
-                logpath = os.path.join(logfile_path, logfile_full_name)
-            logfile = open(logpath, 'w+') 
-            ########### END LOG FILE SHENANIGANS ################
-
-
-
-    trace_enabled = False
-    env_trace_enabled = os.environ.get('PXDEBUG_ENABLETRACE')
-    if env_trace_enabled is not None:
-        if env_trace_enabled.upper() == "YES":
-            trace_enabled = True
-    hidden_breakpoints_enabled = False
-    env_hidden_breakpoints_enabled = os.environ.get('PXDEBUG_ENABLEHIDDENBREAKPOINTS')
-    if env_hidden_breakpoints_enabled is not None:
-        if env_hidden_breakpoints_enabled.upper() == "YES":
-            hidden_breakpoints_enabled = True
+        if not os.path.exists(pxdebug.logfile_path):
+            print("creating folder " + str(pxdebug.logfile_path))
+            os.makedirs(pxdebug.logfile_path)
+        
+        
+        
+        # the default behavior is to put the logs in the place where the user script resides in an xxlogs folder
+        # with the name of the script executed plus '_xxlog' and a number
+        # the only way to change this behavior is to set the environment vars for logname and logpath
+        # however, I do not want changes to these variables to permanently affect where the logs go.
+        # this override behavior should be one-time only
+        if env_logfile_name is not None:
+            if env_logfile_name != "DEFAULT":
+                pxdebug.logfile_name = env_logfile_name
+                #reset this so the override only affects the next file
+                os.environ['PXDEBUG_LOGNAME'] = "DEFAULT"
+      
+        if env_logfile_path is not None:
+            if env_logfile_path != "DEFAULT":
+                pxdebug.logfile_path = env_logfile_path
+                os.environ['PXDEBUG_LOGPATH'] = "DEFAULT"
 
 
-    breakpoints_enabled = False
-    env_breakpoints_enabled = os.environ.get('PXDEBUG_BREAKPOINTS')
-    if env_breakpoints_enabled is not None:
-        if env_breakpoints_enabled.upper() == "YES":
-            breakpoints_enabled = True
+        env_do_logging = os.environ.get('PXDEBUG_LOGGING')
+        pxdebug.do_logging = False
+        if env_do_logging is not None:
+            if env_do_logging.upper() == "YES":
+                pxdebug.do_logging = True
+
+        pxdebug.logfile = None
+        if pxdebug.do_logging:
+            if (pxdebug.logfile_name is not None) and (pxdebug.logfile_path is not None):
+                ######### LOG FILE SHENANIGANS ## 
+                # initialize the name of the log file
+                log_num = 0
+                logfile_full_name = pxdebug.logfile_name + str(log_num) + ".txt"
+                logpath = os.path.join(pxdebug.logfile_path, logfile_full_name)
+                while (os.path.exists(logpath)):
+                    log_num = log_num + 1
+                    logfile_full_name = pxdebug.logfile_name + str(log_num) + ".txt"
+                    logpath = os.path.join(pxdebug.logfile_path, logfile_full_name)
+                logfile = open(logpath, 'w+') 
+                ########### END LOG FILE SHENANIGANS ################
 
 
 
+        pxdebug.trace_enabled = False
+        env_trace_enabled = os.environ.get('PXDEBUG_ENABLETRACE')
+        if env_trace_enabled is not None:
+            if env_trace_enabled.upper() == "YES":
+                pxdebug.trace_enabled = True
+        pxdebug.hidden_breakpoints_enabled = False
+        env_hidden_breakpoints_enabled = os.environ.get('PXDEBUG_ENABLEHIDDENBREAKPOINTS')
+        if env_hidden_breakpoints_enabled is not None:
+            if env_hidden_breakpoints_enabled.upper() == "YES":
+                pxdebug.hidden_breakpoints_enabled = True
 
-    if trace_enabled == True: 
-        sys.setprofile(tracefunc)
-   
-    # there are some cases where we may want to change the environment variables right here.
-    # for example, when a temporary override was made to logpath or logname (these are changed to DEFAULT)
-    write_pxdebug_environment_vars_to_file()
+
+        pxdebug.breakpoints_enabled = False
+        env_breakpoints_enabled = os.environ.get('PXDEBUG_BREAKPOINTS')
+        if env_breakpoints_enabled is not None:
+            if env_breakpoints_enabled.upper() == "YES":
+                pxdebug.breakpoints_enabled = True
 
 
 
 
-
-
-
+        if pxdebug.trace_enabled == True: 
+            sys.setprofile(tracefunc)
+       
+        # there are some cases where we may want to change the environment variables right here.
+        # for example, when a temporary override was made to logpath or logname (these are changed to DEFAULT)
+        if overwrite_old == True:
+            write_pxdebug_environment_vars_to_file()
 
 
 
@@ -745,6 +742,23 @@ class pxdebug():
     def flag():
         return (pxdebug.test_flag == True)
 
+
+    # As an alternative to using CLI program, call this within your module under test
+    # This will enable all of the pxdebug features temporarily without overwriting your saved settings
+    @staticmethod
+    def enable_all():
+        print("enabling all pxdebug features")
+        os.environ['PXDEBUG_ENABLE'] = "YES"
+        os.environ['PXDEBUG_LEVEL'] = "EXTREME"
+        os.environ['PXDEBUG_COLOR'] = "YES"
+        os.environ['PXDEBUG_LOGGING'] = "YES"
+        os.environ['PXDEBUG_ENABLETRACE'] = "YES"
+        os.environ['PXDEBUG_ENABLEHIDDENBREAKPOINTS'] = "YES"
+        os.environ['PXDEBUG_TESTFLAG'] = "YES"
+        os.environ['PXDEBUG_BREAKPOINTS']="YES"
+
+        # reparse the vars
+        pxdebug.read_env_vars()
 
 
 ############# END USER API ################
@@ -972,6 +986,9 @@ class pxdebug():
         print_env_var('PXDEBUG_BREAKPOINTS')
         print_env_var('PXDEBUG_ENABLEHIDDENBREAKPOINTS')
         print_env_var('PXDEBUG_TESTFLAG')
+
+# the first time the module is loaded, the env vars are parsed and rewritten to disk if necessary
+pxdebug.read_env_vars(True)
 
 
 if __name__ == "__main__":
