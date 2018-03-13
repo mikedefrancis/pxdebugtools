@@ -24,6 +24,8 @@ from pdb import Pdb
 import inspect
 
 
+
+
 class dlevel():
     DBG_BASIC = 1
     DBG_VERBOSE = 2
@@ -45,8 +47,9 @@ def write_pxdebug_environment_vars_to_file():
     write_env_var_to_file(env_file, 'PXDEBUG_LOGPATH')
     write_env_var_to_file(env_file, 'PXDEBUG_LOGNAME')
     write_env_var_to_file(env_file, 'PXDEBUG_ENABLETRACE')
-    write_env_var_to_file(env_file, 'PXDEBUG_ENABLEHIDDENTRACE')
+    write_env_var_to_file(env_file, 'PXDEBUG_ENABLEHIDDENBREAKPOINTS')
     write_env_var_to_file(env_file, 'PXDEBUG_TESTFLAG')
+    write_env_var_to_file(env_file, 'PXDEBUG_BREAKPOINTS')
 
     env_file.close()
 
@@ -439,6 +442,44 @@ def yellow(msg ):
 
 
 
+is_env_debug_color = os.environ.get('PXDEBUG_COLOR')
+is_color_enabled = False
+if is_env_debug_color is not None:
+    if is_env_debug_color.upper() == "YES":
+        is_color_enabled = True
+
+# a nice function to print a trace of every function call and print to the screen
+def tracefunc(frame, event, arg, indent=[0]):
+    # the profiler might have some errors on certain libraries. but we don't care.
+    # we only want to profile the usercode, hence the filename checks shown.
+    # wrap in a try/catch for cases where the 'frame' is not available.
+    try:
+        (filename, line_number, function_name, lines, index) = inspect.getframeinfo(frame)
+        # @MPD HACK: only profile the functions that are not part of lib python or <lib> or pxdebug libs
+        if "/lib/python" not in filename and "<" not in filename and "pxdebug" not in filename:
+            if event == "call":
+                indent[0] += 2
+                if is_color_enabled == True:
+                    msg = blue("[trace]" + "--" * indent[0] + "> " + str(frame.f_code.co_name) + " ("+ str(filename) +")")
+                else:
+                    msg="[trace]" + "--" * indent[0] + "> " + str(frame.f_code.co_name) + " ("+ str(filename) +")"
+            elif event == "return":
+                if is_color_enabled == True:
+                    msg=blue("[trace]" + "--" * indent[0] + "< " + str(frame.f_code.co_name) + " ("+ str(filename) +")")
+                else:
+                    msg="[trace]" + "--" * indent[0] + "< " + str(frame.f_code.co_name) + " ("+ str(filename) +")"
+                indent[0] -= 2
+            print(msg)
+            # print the trace to disk if logging is enabled for later perusal
+            pxdebug.logprint(msg)
+            return tracefunc
+    except:
+        pass
+
+
+
+
+
 # NOTE TO USERS: pxdebug does not have a constructor and is used as a static class similar to a namespace
 # STEP1: User programs pxdebug settings using the pxdebug executable program
 # STEP2: User launches their python program that includes "from pxdebugtools import pxdebug"
@@ -519,7 +560,6 @@ class pxdebug():
     if env_logfile_name is not None:
         if env_logfile_name != "DEFAULT":
             logfile_name = env_logfile_name
-            print("TEST HERE HERE THERE IT WAM")
             #reset this so the override only affects the next file
             os.environ['PXDEBUG_LOGNAME'] = "DEFAULT"
   
@@ -557,16 +597,35 @@ class pxdebug():
     if env_trace_enabled is not None:
         if env_trace_enabled.upper() == "YES":
             trace_enabled = True
-    hidden_trace_enabled = False
-    env_hidden_trace_enabled = os.environ.get('PXDEBUG_ENABLEHIDDENTRACE')
-    if env_hidden_trace_enabled is not None:
-        if env_hidden_trace_enabled.upper() == "YES":
-            hidden_trace_enabled = True
+    hidden_breakpoints_enabled = False
+    env_hidden_breakpoints_enabled = os.environ.get('PXDEBUG_ENABLEHIDDENBREAKPOINTS')
+    if env_hidden_breakpoints_enabled is not None:
+        if env_hidden_breakpoints_enabled.upper() == "YES":
+            hidden_breakpoints_enabled = True
 
+
+    breakpoints_enabled = False
+    env_breakpoints_enabled = os.environ.get('PXDEBUG_BREAKPOINTS')
+    if env_breakpoints_enabled is not None:
+        if env_breakpoints_enabled.upper() == "YES":
+            breakpoints_enabled = True
+
+
+
+
+    if trace_enabled == True: 
+        sys.setprofile(tracefunc)
    
     # there are some cases where we may want to change the environment variables right here.
     # for example, when a temporary override was made to logpath or logname (these are changed to DEFAULT)
     write_pxdebug_environment_vars_to_file()
+
+
+
+
+
+
+
 
 
 
@@ -634,13 +693,13 @@ class pxdebug():
     # a way to add breakpoints to python programs and enable/disable/hide them at will
     # use pxdebug --disabletrace to disable all breakpoints
     # by default, even with trace is enabled within pxdebug, hidden breakpoints are not hit (hence hidden)
-    # if you want to step through even the hidden breakpoints, use pxdebug --enablehiddentrace
-    # use pxdebug --disablehiddentrace to restore trace to skip hidden breakpoints
+    # if you want to step through even the hidden breakpoints, use pxdebug --enablehiddenbreakpoints
+    # use pxdebug --disablehiddenbreakpoints to restore trace to skip hidden breakpoints
     @staticmethod
     def breakpoint(msg='', hide=False):
         # Only execute the breakpoints when the right set of user defined conditions have been met
-        if (pxdebug.debug_enabled == True) and (pxdebug.trace_enabled == True):
-            if (pxdebug.hidden_trace_enabled == True) or (hide == False):
+        if (pxdebug.debug_enabled == True) and (pxdebug.breakpoints_enabled == True):
+            if (pxdebug.hidden_breakpoints_enabled == True) or (hide == False):
                 frame = sys._getframe().f_back
                 (filename, line_number, function_name, lines, index) = inspect.getframeinfo(frame)
                 old_stdout = sys.stdout
@@ -659,8 +718,8 @@ class pxdebug():
     @staticmethod
     def bp(msg='', hide=False):
         # Only execute the breakpoints when the right set of user defined conditions have been met
-        if (pxdebug.debug_enabled == True) and (pxdebug.trace_enabled == True):
-            if (pxdebug.hidden_trace_enabled == True) or (hide == False):
+        if (pxdebug.debug_enabled == True) and (pxdebug.breakpoints_enabled == True):
+            if (pxdebug.hidden_breakpoints_enabled == True) or (hide == False):
                 frame = sys._getframe().f_back
                 (filename, line_number, function_name, lines, index) = inspect.getframeinfo(frame)
                 old_stdout = sys.stdout
@@ -739,23 +798,28 @@ class pxdebug():
 
         parser.add_argument('-a', '-m', '--max', '--all', action="store_true", help="turn on all pxdebug features and enable pxdebug")
        
-        parser.add_argument('-t', '--enabletrace', action="store_true", help="enable pdb debug trace via pxdebug_bp()")
+        parser.add_argument('-t', '--enabletrace', action="store_true", help="enable function callstack trace")
 
-        parser.add_argument('--disabletrace', action="store_true", help="disable pdb debug trace via pxdebug_bp()")
+        parser.add_argument('--disabletrace', action="store_true", help="disable function callstack trace")
 
-        parser.add_argument('--disablehiddentrace', action="store_true", help="enable pdb debug trace via pxdebug_bp()")
+        parser.add_argument('--enablebreakpoints', action='store_true', help="enable pdb breakpoints via pxdebug_bp()")
 
-        parser.add_argument('--enablehiddentrace', action="store_true", help="disable pdb debug trace via pxdebug_bp()")
+        parser.add_argument('--disablebreakpoints', action='store_true', help="disable pdb breakpoints via pxdebug_bp()")
 
-        parser.add_argument('--on', '--enable', action="store_true", help="enable pxdebug features in all modules")
+        parser.add_argument('--disablehiddenbreakpoints', action="store_true", help="disable debug using hidden breakpoints")
 
-        parser.add_argument('--off', '--disable', action="store_true", help="disable pxdebug features in all modules")
+        parser.add_argument('--enablehiddenbreakpoints', action="store_true", help="enable debug using hidden breakpoints")
+
+        parser.add_argument('--on', '--enable', action="store_true", help="enable pxdebug features (using existing settings)")
+
+        parser.add_argument('--off', '--disable', action="store_true", help="disable pxdebug features (does not erase settings)")
 
         parser.add_argument('-s', '--show', '--settings', action="store_true", help="display pxdebug settings and exit")
 
         parser.add_argument('--setflag', action="store_true", help="set a flag for use with 'if pxdebug.flag() == True:'")
 
         parser.add_argument('--unsetflag', action="store_true", help="unset the debug flag to skip your test code")
+
 
         args = parser.parse_args(options)
         
@@ -807,9 +871,10 @@ class pxdebug():
                 os.environ['PXDEBUG_LOGGING'] = "YES"
                 os.environ['PXDEBUG_LOGPATH'] = "DEFAULT"
                 os.environ['PXDEBUG_LOGNAME'] = "DEFAULT"
-                os.environ['PXDEBUG_ENABLETRACE'] = "YES"
-                os.environ['PXDEBUG_ENABLEHIDDENTRACE'] = "NO"      
+                os.environ['PXDEBUG_ENABLETRACE'] = "NO"
+                os.environ['PXDEBUG_ENABLEHIDDENBREAKPOINTS'] = "NO"      
                 os.environ['PXDEBUG_TESTFLAG'] = "NO"
+                os.environ['PXDEBUG_BREAKPOINTS']="YES"
         if args.max is not None:
             if args.max == True:
                 print("enabling all pxdebug features")
@@ -818,8 +883,9 @@ class pxdebug():
                 os.environ['PXDEBUG_COLOR'] = "YES"
                 os.environ['PXDEBUG_LOGGING'] = "YES"
                 os.environ['PXDEBUG_ENABLETRACE'] = "YES"
-                os.environ['PXDEBUG_ENABLEHIDDENTRACE'] = "YES"
+                os.environ['PXDEBUG_ENABLEHIDDENBREAKPOINTS'] = "YES"
                 os.environ['PXDEBUG_TESTFLAG'] = "YES"
+                os.environ['PXDEBUG_BREAKPOINTS']="YES"               
         if args.off is not None:
             if args.off == True:
                 print("disabling pxdebug features")
@@ -830,23 +896,34 @@ class pxdebug():
                 print("enabling pxdebug")
                 os.environ['PXDEBUG_ENABLE'] = "YES"
 
+
+
+        if args.disablebreakpoints is not None:
+            if args.disablebreakpoints == True:
+                print("disabling pdb breakpoints")
+                os.environ['PXDEBUG_BREAKPOINTS'] = "NO"
+        if args.enablebreakpoints is not None:
+            if args.enablebreakpoints == True:
+                print("enabling pdb breakpoints")
+                os.environ['PXDEBUG_BREAKPOINTS'] = "YES"
+
         if args.enabletrace is not None:
             if args.enabletrace == True:
-                print("enabling pdb debug trace features") 
+                print("enabling function callstack trace features") 
                 #  os.environ['PXDEBUG_LEVEL'] = "VERBOSE" #some nice additional messages when debugging?
                 os.environ['PXDEBUG_ENABLETRACE'] = "YES"
         if args.disabletrace is not None:
             if args.disabletrace == True:
-                print("disabling pdb debug trace features")
+                print("disabling function callstack trace features")
                 os.environ['PXDEBUG_ENABLETRACE'] = "NO"
-        if args.enablehiddentrace is not None:
-            if args.enablehiddentrace == True:
-                print("enabling pdb debug hidden trace features")
-                os.environ['PXDEBUG_ENABLEHIDDENTRACE'] = "YES"
-        if args.disablehiddentrace is not None:
-            if args.disablehiddentrace == True:
-                print("disabling pdb debug hidden trace features")
-                os.environ['PXDEBUG_ENABLEHIDDENTRACE'] = "NO"
+        if args.enablehiddenbreakpoints is not None:
+            if args.enablehiddenbreakpoints == True:
+                print("enabling pdb debug hidden breakpoints features")
+                os.environ['PXDEBUG_ENABLEHIDDENBREAKPOINTS'] = "YES"
+        if args.disablehiddenbreakpoints is not None:
+            if args.disablehiddenbreakpoints == True:
+                print("disabling pdb debug hidden breakpoints features")
+                os.environ['PXDEBUG_ENABLEHIDDENBREAKPOINTS'] = "NO"
 
         if args.setflag is not None:
             if args.setflag == True:
@@ -874,9 +951,10 @@ class pxdebug():
             os.environ['PXDEBUG_LOGGING'] = "YES"
             os.environ['PXDEBUG_LOGPATH'] = "DEFAULT"
             os.environ['PXDEBUG_LOGNAME'] = "DEFAULT"
-            os.environ['PXDEBUG_ENABLETRACE'] = "YES"
-            os.environ['PXDEBUG_ENABLEHIDDENTRACE'] = "NO"                
+            os.environ['PXDEBUG_ENABLETRACE'] = "NO"
+            os.environ['PXDEBUG_ENABLEHIDDENBREAKPOINTS'] = "NO"                
             os.environ['PXDEBUG_TESTFLAG'] = "NO"
+            os.environ['PXDEBUG_BREAKPOINTS'] = "YES"
 
         write_pxdebug_environment_vars_to_file()
        
@@ -891,7 +969,8 @@ class pxdebug():
         print_env_var('PXDEBUG_LOGPATH')
         print_env_var('PXDEBUG_LOGNAME')
         print_env_var('PXDEBUG_ENABLETRACE')
-        print_env_var('PXDEBUG_ENABLEHIDDENTRACE')
+        print_env_var('PXDEBUG_BREAKPOINTS')
+        print_env_var('PXDEBUG_ENABLEHIDDENBREAKPOINTS')
         print_env_var('PXDEBUG_TESTFLAG')
 
 
