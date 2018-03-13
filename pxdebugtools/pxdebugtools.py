@@ -630,10 +630,14 @@ class pxdebug():
 #########################################################################################
 ############ PXDEBUG API FUNCTIONS FOR INCORPORATION INTO USER MODULES ############################
 ############ USER pxdebug.basic(msg) and other functions within your own programs to use
+
+    # a message that shows up as bright green
+    # if no msg is supplied then this function returns true if corresponding level is enabled else false
     @staticmethod
     def basic(msg=''):
-        if ((pxdebug.debug_enabled == True) and (pxdebug.debug_level >= dlevel.DBG_BASIC)):
-            if msg is not '':
+        if msg is not '':
+            dmsg = ''
+            if ((pxdebug.debug_enabled == True) and (pxdebug.debug_level >= dlevel.DBG_BASIC)):
                 frame = sys._getframe().f_back
                 (filename, line_number, function_name, lines, index) = inspect.getframeinfo(frame)
                 dmsg = "BASIC DEBUG| " + str(msg)
@@ -643,14 +647,20 @@ class pxdebug():
                     print(dmsg)
                 pxdebug.logprint(dmsg)
     
-            return True
-        return False
+            return dmsg
+        else:
+            if ((pxdebug.debug_enabled == True) and (pxdebug.debug_level >= dlevel.DBG_BASIC)):
+                return True
+            else:
+                return False
 
     # a message that shows up bright yellow but only when --color is used    
+    # if no msg is supplied then this function returns true if corresponding level is enabled else false
     @staticmethod
     def verbose(msg='', linesplit = False):
-        if ((pxdebug.debug_enabled == True) and (pxdebug.debug_level >= dlevel.DBG_VERBOSE)):
-            if msg is not '':
+        if msg is not '':
+            dmsg = ''
+            if ((pxdebug.debug_enabled == True) and (pxdebug.debug_level >= dlevel.DBG_VERBOSE)):
                 frame = sys._getframe().f_back
                 (filename, line_number, function_name, lines, index) = inspect.getframeinfo(frame)
                 if linesplit == True:
@@ -662,14 +672,21 @@ class pxdebug():
                 else:
                     print(dmsg)
                 pxdebug.logprint(dmsg)
-            return True
-        return False
+            # return the message that was printed/logged or '' if there was no message
+            return dmsg
+        else:
+            if ((pxdebug.debug_enabled == True) and (pxdebug.debug_level >= dlevel.DBG_VERBOSE)):
+                return True
+            else:
+                return False
        
-    # a message that shows up bright yellow but only when --color is used    
+    # a message that shows up bright yellow but only when --color is used
+    # if no msg is supplied then this function returns true if corresponding level is enabled else false
     @staticmethod
-    def extreme(msg='', linesplit = False):
-        if ((pxdebug.debug_enabled == True) and (pxdebug.debug_level >= dlevel.DBG_EXTREME)):
-            if msg is not '': 
+    def extreme(msg='', linesplit = True):
+        if msg is not '': 
+            dmsg = ''
+            if ((pxdebug.debug_enabled == True) and (pxdebug.debug_level >= dlevel.DBG_EXTREME)):
                 frame = sys._getframe().f_back
                 (filename, line_number, function_name, lines, index) = inspect.getframeinfo(frame)
                 if linesplit == True:
@@ -682,8 +699,13 @@ class pxdebug():
                     print(dmsg)
                 pxdebug.logprint(dmsg)
             
-            return True
-        return False
+            return dmsg
+        else:
+            if ((pxdebug.debug_enabled == True) and (pxdebug.debug_level >= dlevel.DBG_BASIC)):
+                return True
+            else:
+                return False
+
 
 
     ## THIS IS A WRAPPER FOR PDB (command line python debugger)
@@ -746,8 +768,7 @@ class pxdebug():
     # As an alternative to using CLI program, call this within your module under test
     # This will enable all of the pxdebug features temporarily without overwriting your saved settings
     @staticmethod
-    def enable_all():
-        print("enabling all pxdebug features")
+    def force_all():
         os.environ['PXDEBUG_ENABLE'] = "YES"
         os.environ['PXDEBUG_LEVEL'] = "EXTREME"
         os.environ['PXDEBUG_COLOR'] = "YES"
@@ -759,6 +780,41 @@ class pxdebug():
 
         # reparse the vars
         pxdebug.read_env_vars()
+
+
+    # As an alternative to using CLI program, call this within your module under test
+    # This will enable all of the pxdebug features temporarily without overwriting your saved settings
+    @staticmethod
+    def force_defaults():
+        os.environ['PXDEBUG_ENABLE'] = "YES"
+        os.environ['PXDEBUG_LEVEL'] = "VERBOSE"
+        os.environ['PXDEBUG_COLOR'] = "YES"
+        os.environ['PXDEBUG_LOGGING'] = "YES"
+        os.environ['PXDEBUG_ENABLETRACE'] = "NO"
+        os.environ['PXDEBUG_ENABLEHIDDENBREAKPOINTS'] = "NO"
+        os.environ['PXDEBUG_TESTFLAG'] = "YES"
+        os.environ['PXDEBUG_BREAKPOINTS']="YES"
+
+        # reparse the vars
+        pxdebug.read_env_vars()
+
+
+    # As an alternative to using CLI program, call this within your module under test
+    # This will enable all of the pxdebug features temporarily without overwriting your saved settings
+    @staticmethod
+    def force_verbose():
+        os.environ['PXDEBUG_ENABLE'] = "YES"
+        os.environ['PXDEBUG_LEVEL'] = "VERBOSE"
+        os.environ['PXDEBUG_COLOR'] = "YES"
+        os.environ['PXDEBUG_LOGGING'] = "NO"
+        os.environ['PXDEBUG_ENABLETRACE'] = "NO"
+        os.environ['PXDEBUG_ENABLEHIDDENBREAKPOINTS'] = "NO"
+        os.environ['PXDEBUG_TESTFLAG'] = "NO"
+        os.environ['PXDEBUG_BREAKPOINTS']="NO"
+
+        # reparse the vars
+        pxdebug.read_env_vars()
+
 
 
 ############# END USER API ################

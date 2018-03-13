@@ -8,6 +8,8 @@ def print_math():
 
 if __name__ == "__main__":
    number = 10
+
+   pxdebug.force_all()
    print_math()
    print ("a regular print message from python that works when xxdebug has been disabled")
    if pxdebug.enabled():
